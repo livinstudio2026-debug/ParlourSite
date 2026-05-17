@@ -22,18 +22,38 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
     const track   = trackRef.current;
     if (!wrapper || !track) return;
 
-    // ── Identical to HoriCards getScrollAmount ───────────────────────────────
     const getScrollAmount = () => {
       const vp      = window.innerWidth;
       const padding = vp <= 768 ? vp * 0.45 : 120;
       return Math.max(track.scrollWidth - vp + padding, 0);
     };
 
-    // ── gsap.context scopes every trigger created inside to this wrapper ─────
-    // ctx.revert() on cleanup kills only these triggers, never other sections.
+    // ── Grab the sibling section that sits ABOVE this one in the DOM ─────────
+    // When we scroll back up into it, it must paint over the pinned wrapper.
+    // We elevate it while the services section is inactive so it always wins
+    // the stacking contest during the un-pin transition.
+    const prevSection = wrapper.previousElementSibling as HTMLElement | null;
+    const nextSection = wrapper.nextElementSibling  as HTMLElement | null;
+
+    const setActive = () => {
+      // Services section is pinned and in view — it should be on top
+      wrapper.style.zIndex = "10";
+      if (prevSection) prevSection.style.zIndex = "0";
+      if (nextSection) nextSection.style.zIndex  = "0";
+    };
+
+    const setInactive = () => {
+      // Services section is NOT active — surrounding sections must win
+      wrapper.style.zIndex = "0";
+      if (prevSection) prevSection.style.zIndex = "11"; // paint OVER services when scrolling back up
+      if (nextSection) nextSection.style.zIndex  = "11"; // paint OVER services when scrolling down past
+    };
+
+    // Start inactive — section hasn't been entered yet
+    setInactive();
+
     const ctx = gsap.context(() => {
 
-      // ── Main horizontal scroll timeline — HoriCards pattern exactly ─────────
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: wrapper,
@@ -43,13 +63,11 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           scrub: 1,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-          // When the section is pinned, keep it below subsequent sections
-          // so fast-scroll never bleeds over them
           pinReparent: false,
-          onEnter:      () => { wrapper.style.zIndex = "10"; },
-          onLeave:      () => { wrapper.style.zIndex = "-1"; },
-          onEnterBack:  () => { wrapper.style.zIndex = "10"; },
-          onLeaveBack:  () => { wrapper.style.zIndex = "-1"; },
+          onEnter:      setActive,
+          onLeave:      setInactive,
+          onEnterBack:  setActive,
+          onLeaveBack:  setInactive,
           onUpdate: (self) => {
             if (progressRef.current) {
               progressRef.current.style.width = `${self.progress * 100}%`;
@@ -58,35 +76,32 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
         },
       });
 
-      // Single `to` translating the track — same pattern as HoriCards
       tl.to(track, {
         x: () => -getScrollAmount(),
-        ease: "none",   // 1:1 with scroll position, no drift
+        ease: "none",
       });
 
-      // Per-card entrance animation intentionally removed.
-      // Cards are pre-rendered fully visible so they appear instantly
-      // as they scroll into view with no fade/scale pop-in delay.
+    }, wrapper);
 
-    }, wrapper); // scope to wrapper element
-
-    // ── Resize: refresh only, never rebuild ─────────────────────────────────
-    // HoriCards uses the same pattern. ScrollTrigger.refresh() recalculates
-    // scroll distances in-place — no timeline teardown, no orphaned triggers,
-    // no white flash.
-    const handleResize = () => {
-      ScrollTrigger.refresh();
-    };
+    const handleResize = () => { ScrollTrigger.refresh(); };
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      ctx.revert(); // surgical cleanup — only kills triggers from this context
+      // Restore siblings to neutral on unmount
+      if (prevSection) prevSection.style.zIndex = "";
+      if (nextSection) nextSection.style.zIndex  = "";
+      ctx.revert();
     };
   }, [cardCount]);
 
   return (
     <>
+      {/*
+        Initial z-index is 0 (not 10) — the CSS no longer hard-codes elevation.
+        Elevation is managed entirely by the JS callbacks above, so there's no
+        race between a static CSS value and the onLeaveBack JS assignment.
+      */}
       <div ref={wrapperRef} className="svc-outer-wrapper">
 
         <div ref={trackRef} className="svc-track">
@@ -95,12 +110,10 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           </div>
         </div>
 
-        {/* Progress bar — identical markup to original */}
         <div className="svc-progress-wrap">
           <div ref={progressRef} className="svc-progress-fill" />
         </div>
 
-        {/* Scroll hint — identical markup to original */}
         <div className="svc-hint">
           <span className="svc-hint-label">Scroll to Explore</span>
           <div className="svc-hint-line" />
@@ -108,16 +121,23 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
 
       </div>
 
-      {/* All CSS identical to original — zero visual changes */}
       <style>{`
         .svc-outer-wrapper {
           position: relative;
           width: 100%;
           height: 100vh;
           overflow: hidden;
-          contain: paint;
+          /*
+            'contain: paint' was creating an isolated stacking context that
+            fought with the JS z-index management. Replaced with
+            'contain: size layout' which still gives the performance gains
+            (no overflow paint bleed, layout isolation) without locking the
+            element into its own stacking context.
+          */
+          contain: size layout;
           transform: translateZ(0);
-          z-index: 10;
+          /* z-index starts at 0 — JS callbacks own elevation from here */
+          z-index: 0;
         }
 
         .svc-track {
@@ -126,9 +146,6 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           height: 100%;
           display: flex;
           align-items: center;
-          /* Promote to GPU compositor layer immediately —
-             without this the browser uploads the layer on the
-             first scroll tick, causing a 1-frame white flash. */
           will-change: transform;
           transform: translateZ(0);
           padding-left:  clamp(1rem, 5vw, 7rem);
@@ -141,11 +158,6 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           gap: clamp(1rem, 2.5vw, 2.2rem);
         }
 
-        /* Force every service card to be rendered immediately —
-           even those off-screen to the right. This is the key fix:
-           the browser normally skips layout/paint for off-screen
-           flex children, which causes the blank flash when they
-           scroll into view. contain:none overrides that. */
         .service-card {
           contain: none !important;
           content-visibility: visible !important;
