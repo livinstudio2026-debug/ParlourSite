@@ -198,14 +198,8 @@ export default function GallerySection() {
         </div>
 
         {/* ══════════ GALLERY GRID ══════════ */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-        >
-          <GalleryGrid />
-        </motion.div>
+        {/* No wrapper fade here — GalleryGrid owns its own whileInView trigger */}
+        <GalleryGrid />
 
         {/* ══════════ BOTTOM CTA STRIP ══════════ */}
         <motion.div
