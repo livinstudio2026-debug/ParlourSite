@@ -331,13 +331,13 @@ export default function Hero() {
 
       {/* ════════════════ HERO CONTENT ════════════════ */}
       <div
-        className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-16 sm:pt-22 lg:pt-28 pb-10 sm:pb-14 lg:pb-16"
+        className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 lg:pt-28 pb-16"
         style={{ zIndex: 10 }}
       >
-        <div className="grid lg:grid-cols-2 gap-5 lg:gap-14 items-center">
+        <div className="grid lg:grid-cols-2 gap-16 sm:gap-10 lg:gap-14 items-center">
 
           {/* ── LEFT COLUMN ── */}
-          <div className="flex flex-col gap-4 lg:gap-7 lg:items-start items-center text-center lg:text-left">
+          <div className="flex flex-col gap-7 lg:items-start items-center text-center lg:text-left">
 
             {/* Badge */}
             <div
@@ -431,7 +431,7 @@ export default function Hero() {
             </div>
 
             {/* Stats */}
-            <div ref={statsRef} className="flex flex-wrap gap-4 justify-center lg:justify-start mt-1" style={{ opacity: 0 }}>
+            <div ref={statsRef} className="hidden sm:flex flex-wrap gap-4 justify-center lg:justify-start mt-1" style={{ opacity: 0 }}>
               {STATS.map((s) => (
                 <div
                   key={s.label}
