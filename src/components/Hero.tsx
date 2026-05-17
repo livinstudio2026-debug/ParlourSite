@@ -334,7 +334,7 @@ export default function Hero() {
         className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-16 sm:pt-22 lg:pt-28 pb-10 sm:pb-14 lg:pb-16"
         style={{ zIndex: 10 }}
       >
-        <div className="grid lg:grid-cols-2 gap-3 sm:gap-8 lg:gap-14 items-center">
+        <div className="grid lg:grid-cols-2 gap-5 lg:gap-14 items-center">
 
           {/* ── LEFT COLUMN ── */}
           <div className="flex flex-col gap-4 lg:gap-7 lg:items-start items-center text-center lg:text-left">
