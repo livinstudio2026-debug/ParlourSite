@@ -40,11 +40,17 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           start: "top top",
           end: () => `+=${getScrollAmount()}`,
           pin: true,
-          scrub: 1,               // same value as HoriCards
-          anticipatePin: 1,       // prevents pin-jump white flash on fast scroll
+          scrub: 1,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
+          // When the section is pinned, keep it below subsequent sections
+          // so fast-scroll never bleeds over them
+          pinReparent: false,
+          onEnter:      () => { wrapper.style.zIndex = "10"; },
+          onLeave:      () => { wrapper.style.zIndex = "-1"; },
+          onEnterBack:  () => { wrapper.style.zIndex = "10"; },
+          onLeaveBack:  () => { wrapper.style.zIndex = "-1"; },
           onUpdate: (self) => {
-            // Direct DOM write — no React state, no re-render cost
             if (progressRef.current) {
               progressRef.current.style.width = `${self.progress * 100}%`;
             }
@@ -109,10 +115,9 @@ export default function ServicesScrollWrapper({ children, cardCount }: Props) {
           width: 100%;
           height: 100vh;
           overflow: hidden;
-          /* contain:paint stops the browser repainting the full page on
-             every scroll tick — this is what eliminates the white flash */
           contain: paint;
           transform: translateZ(0);
+          z-index: 10;
         }
 
         .svc-track {
