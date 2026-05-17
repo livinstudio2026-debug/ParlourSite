@@ -9,19 +9,31 @@ interface GalleryCardProps {
   index: number;
 }
 
-// CTAs that mean "book me" → contact section
-// Everything else → services section
 const BOOKING_CTAS = new Set(["Book Session", "Book Artist"]);
 
 function getCtaDestination(cta: string): string {
   return BOOKING_CTAS.has(cta) ? "contact" : "services";
 }
 
+// Shared entrance variants — used by the card's outer motion.div.
+// The TRIGGER (initial/animate/whileInView) lives in the parent grid,
+// not here. Framer Motion propagates the variant name down automatically.
+export const cardVariants = {
+  hidden:  { opacity: 0, y: 18 },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.38,
+      // Tiny stagger so cards don't feel robotic, but max delay is only
+      // 8 * 0.04 = 0.32 s — imperceptible as "waiting", feels like a ripple.
+      delay: index * 0.04,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
+  }),
+};
+
 export default function GalleryCard({ item, index }: GalleryCardProps) {
-  /* Separate refs:
-     - Framer Motion owns the outer wrapper (entrance only: fade + y)
-     - GSAP owns cardInnerRef (box-shadow hover) and imageRef (scale)
-     Keeping them on DIFFERENT elements prevents FM/GSAP transform fights. */
   const cardInnerRef = useRef<HTMLDivElement>(null);
   const imageRef     = useRef<HTMLImageElement>(null);
   const shimRef      = useRef<HTMLDivElement>(null);
@@ -55,19 +67,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
       });
   };
 
-  /* Entrance: fast fade + small y. Snappy but still elegant. */
-  const cardVariants = {
-    hidden:  { opacity: 0, y: 18 },
-    visible: {
-      opacity: 1, y: 0,
-      transition: {
-        duration: 0.32,
-        delay: index * 0.04,
-        ease: [0.25, 0.46, 0.45, 0.94] as [number,number,number,number],
-      },
-    },
-  };
-
   const overlayVariants = {
     rest:  { opacity: 0 },
     hover: { opacity: 1, transition: { duration: 0.35, ease: "easeOut" as const } },
@@ -79,15 +78,18 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
   };
 
   return (
-    /* Outer: Framer Motion entrance — MUST be w-full h-full to fill grid cell */
+    /*
+      No whileInView / viewport here.
+      The parent grid wrapper owns `initial="hidden"` + `whileInView="visible"`.
+      Framer Motion sees `variants` on this child and propagates the active
+      variant name down automatically — all cards flip to "visible" the instant
+      the grid enters the viewport, with only the tiny per-card delay above.
+    */
     <motion.div
       className="w-full h-full"
       variants={cardVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-20px" }}
+      custom={index}
     >
-      {/* Inner: GSAP hover target + overflow clip */}
       <div
         ref={cardInnerRef}
         onMouseEnter={onHoverIn}
@@ -118,7 +120,7 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
           </div>
         )}
 
-        {/* Image — absolute fill so it covers the full cell height */}
+        {/* Image */}
         <div className="absolute inset-0 overflow-hidden">
           <img
             ref={imageRef}
@@ -166,7 +168,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
             WebkitBackdropFilter: "blur(2px)",
           }}
         >
-          {/* Top glow border */}
           <div
             className="absolute top-0 left-0 right-0 h-[1.5px]"
             style={{
@@ -175,7 +176,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
           />
 
           <motion.div variants={textVariants} animate={hovered ? "hover" : "rest"}>
-            {/* Category pill */}
             <div
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 mb-2.5 text-[0.58rem] font-medium tracking-[0.14em] uppercase"
               style={{
@@ -191,7 +191,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
               {item.category}
             </div>
 
-            {/* Title */}
             <h3
               className="font-light leading-snug mb-1.5"
               style={{
@@ -204,7 +203,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
               {item.title}
             </h3>
 
-            {/* Description */}
             <p
               className="text-[0.7rem] font-light leading-relaxed mb-2.5"
               style={{ color: "rgba(253,246,240,0.62)" }}
@@ -212,7 +210,6 @@ export default function GalleryCard({ item, index }: GalleryCardProps) {
               {item.description}
             </p>
 
-            {/* CTA */}
             {item.cta && (
               <button
                 onClick={() => scrollToSection(getCtaDestination(item.cta!))}
