@@ -331,10 +331,10 @@ export default function Hero() {
 
       {/* ════════════════ HERO CONTENT ════════════════ */}
       <div
-        className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-28 pb-16"
+        className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-16 pt-20 sm:pt-24 lg:pt-28 pb-16"
         style={{ zIndex: 10 }}
       >
-        <div className="grid lg:grid-cols-2 gap-14 items-center">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-14 items-center">
 
           {/* ── LEFT COLUMN ── */}
           <div className="flex flex-col gap-7 lg:items-start items-center text-center lg:text-left">
