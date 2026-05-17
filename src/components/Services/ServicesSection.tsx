@@ -304,6 +304,8 @@ export default function ServicesSection() {
       style={{
         background: "linear-gradient(175deg, #0c0810 0%, #180c14 35%, #130b10 65%, #0a0810 100%)",
         position: "relative",
+        zIndex: 1,
+        isolation: "isolate",
       }}
     >
       {/* Background atmosphere */}
@@ -351,6 +353,12 @@ export default function ServicesSection() {
           to   { transform: translateY(-5px) rotate(22deg); opacity: 0.8; }
         }
         .svc-section { overflow: hidden; }
+        /* Every sibling section after services must sit above the
+           GSAP-pinned scroll layer so fast scrolls never bleed over */
+        #services ~ section {
+          position: relative;
+          z-index: 2;
+        }
         @media (max-width: 768px) {
           .svc-section { overflow-x: hidden; overflow-y: visible; }
         }
