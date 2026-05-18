@@ -216,9 +216,9 @@ export default function CustomCursor() {
       brushPos.current.x = mouse.current.x;
       brushPos.current.y = mouse.current.y;
 
-      // — Ring: slow dreamy lag — the only element that trails
-      ringPos.current.x = lerp(ringPos.current.x, mouse.current.x, 0.07);
-      ringPos.current.y = lerp(ringPos.current.y, mouse.current.y, 0.07);
+      // — Ring: fast but smooth lag
+      ringPos.current.x = lerp(ringPos.current.x, mouse.current.x, 0.18);
+      ringPos.current.y = lerp(ringPos.current.y, mouse.current.y, 0.18);
 
       // — Scale: lerp for silky hover grow/shrink
       brushScale.current = lerp(brushScale.current, targetScale.current, 0.11);
