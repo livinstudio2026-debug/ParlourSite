@@ -1,10 +1,9 @@
-import { useRef } from "react";
-import { motion } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import GalleryGrid from "./GalleryGrid.tsx";
 import GalleryBackgroundEffects from "./GalleryBackgroundEffects.tsx";
 import FloatingParticles from "./FloatingParticles.tsx";
 import { scrollToSection } from "../../utils/scrollToSection.ts";
-
 
 /* ── Sparkle SVG helper ── */
 function Sparkle({ size = 16, style }: { size?: number; style?: React.CSSProperties }) {
@@ -32,12 +31,11 @@ function Sparkle({ size = 16, style }: { size?: number; style?: React.CSSPropert
 }
 
 /* ── Animated luxury divider ── */
-function LuxuryDivider() {
+function LuxuryDivider({ isVisible }: { isVisible: boolean }) {
   return (
     <motion.div
       initial={{ scaleX: 0, opacity: 0 }}
-      whileInView={{ scaleX: 1, opacity: 1 }}
-      viewport={{ once: true }}
+      animate={isVisible ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 }}
       transition={{ duration: 1.1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="flex items-center gap-3 my-5"
       style={{ transformOrigin: "center" }}
@@ -80,6 +78,20 @@ function LuxuryDivider() {
 ══════════════════════════════════════════════ */
 export default function GallerySection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  // Force animation to trigger immediately on mount
+  useEffect(() => {
+    // Small delay to ensure DOM is ready, but much faster than scroll trigger
+    const timer = setTimeout(() => {
+      setHasAnimated(true);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Use either scroll trigger or immediate mount trigger
+  const shouldAnimate = hasAnimated || isInView;
 
   return (
     <section
@@ -104,11 +116,10 @@ export default function GallerySection() {
         {/* ══════════ SECTION HEADER ══════════ */}
         <div className="flex flex-col items-center text-center mb-10 sm:mb-16 lg:mb-20">
 
-          {/* Small label badge */}
+          {/* Small label badge - ANIMATE IMMEDIATELY */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
+            animate={shouldAnimate ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
             transition={{ duration: 0.75, ease: "easeOut" }}
             className="inline-flex items-center gap-2 rounded-full px-4 py-[0.38rem] text-[0.65rem] sm:text-[0.68rem] font-medium tracking-[0.14em] sm:tracking-[0.18em] uppercase mb-5 sm:mb-6 max-w-full"
             style={{
@@ -129,11 +140,10 @@ export default function GallerySection() {
             <Sparkle size={10} />
           </motion.div>
 
-          {/* Main heading */}
+          {/* Main heading - ANIMATE IMMEDIATELY */}
           <motion.h2
             initial={{ y: 38, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
+            animate={shouldAnimate ? { y: 0, opacity: 1 } : { y: 38, opacity: 0 }}
             transition={{ duration: 0.95, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="font-light leading-[1.06] max-w-[720px]"
             style={{
@@ -159,13 +169,12 @@ export default function GallerySection() {
           </motion.h2>
 
           {/* Animated divider */}
-          <LuxuryDivider />
+          <LuxuryDivider isVisible={shouldAnimate} />
 
-          {/* Subheading */}
+          {/* Subheading - ANIMATE IMMEDIATELY */}
           <motion.p
             initial={{ y: 24, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
+            animate={shouldAnimate ? { y: 0, opacity: 1 } : { y: 24, opacity: 0 }}
             transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
             className="text-[0.98rem] font-light leading-[1.82] max-w-[560px]"
             style={{ color: "rgba(253,246,240,0.52)" }}
@@ -174,11 +183,10 @@ export default function GallerySection() {
             transformations, and premium salon artistry.
           </motion.p>
 
-          {/* Decorative sparkles row */}
+          {/* Decorative sparkles row - ANIMATE IMMEDIATELY */}
           <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+            animate={shouldAnimate ? { opacity: 1 } : { opacity: 0 }}
             transition={{ delay: 0.45, duration: 0.7 }}
             className="flex items-center gap-4 mt-8"
           >
@@ -198,14 +206,12 @@ export default function GallerySection() {
         </div>
 
         {/* ══════════ GALLERY GRID ══════════ */}
-        {/* No wrapper fade here — GalleryGrid owns its own whileInView trigger */}
         <GalleryGrid />
 
         {/* ══════════ BOTTOM CTA STRIP ══════════ */}
         <motion.div
           initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="flex flex-col items-center justify-center gap-4 mt-10 sm:mt-16 lg:mt-20"
         >
