@@ -179,16 +179,16 @@ function SectionHeader() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: lineRef.current, start: "top 88%", once: true },
+        scrollTrigger: { trigger: lineRef.current, start: "top 98%", once: true },
         defaults: { ease: "power3.out" },
       });
       tl
-        .fromTo(lineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 1.2, transformOrigin: "left center" })
-        .fromTo(".svc-label", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, "-=0.6")
-        .fromTo(".svc-h2-line1", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1.0 }, "-=0.5")
-        .fromTo(".svc-h2-line2", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1.0 }, "-=0.8")
-        .fromTo(".svc-sub", { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, "-=0.7")
-        .fromTo(".svc-ornament", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, stagger: 0.08, duration: 0.5 }, "-=0.5");
+        .fromTo(lineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 0.7, transformOrigin: "left center" })
+        .fromTo(".svc-label", { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.5")
+        .fromTo(".svc-h2-line1", { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 }, "-=0.35")
+        .fromTo(".svc-h2-line2", { y: 28, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55 }, "-=0.45")
+        .fromTo(".svc-sub",      { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45 }, "-=0.4")
+        .fromTo(".svc-ornament", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, stagger: 0.06, duration: 0.35 }, "-=0.35");
     });
     return () => ctx.revert();
   }, []);
@@ -201,6 +201,7 @@ function SectionHeader() {
         background: "linear-gradient(90deg, transparent, rgba(231,84,128,0.5), rgba(212,175,55,0.4), transparent)",
         marginBottom: "3rem",
         transformOrigin: "left center",
+        transform: "scaleX(0)",   // ← start collapsed; GSAP animates to scaleX(1)
       }} />
 
       {/* Label */}
@@ -212,6 +213,8 @@ function SectionHeader() {
         textTransform: "uppercase",
         color: "rgba(212,175,185,0.55)",
         marginBottom: "1.8rem",
+        opacity: 0,                   // ← GSAP fromTo start state
+        transform: "translateY(16px)",
       }}>
         ✦ &nbsp; Luxury Services &nbsp; ✦
       </div>
@@ -225,6 +228,8 @@ function SectionHeader() {
           lineHeight: 1.06,
           color: "#FDF6F0",
           letterSpacing: "-0.01em",
+          opacity: 0,                   // ← GSAP fromTo start state
+          transform: "translateY(40px)",
         }}>
           Beauty Experiences
         </h2>
@@ -241,6 +246,8 @@ function SectionHeader() {
           WebkitTextFillColor: "transparent",
           backgroundClip: "text",
           letterSpacing: "0.01em",
+          opacity: 0,                   // ← GSAP fromTo start state
+          transform: "translateY(40px)",
         }}>
           Crafted For Perfection
         </h2>
@@ -255,6 +262,8 @@ function SectionHeader() {
         color: "rgba(253,246,240,0.4)",
         maxWidth: 520,
         lineHeight: 2,
+        opacity: 0,                   // ← GSAP fromTo start state
+        transform: "translateY(22px)",
       }}>
         Discover personalized salon and spa treatments designed to elevate<br />
         your confidence, elegance, and glow.
@@ -268,6 +277,8 @@ function SectionHeader() {
             color: i === 1 ? "rgba(212,175,55,0.55)" : "rgba(212,175,185,0.3)",
             animation: `svcSparkle ${2.3 + i * 0.4}s ease-in-out ${i * 0.28}s infinite alternate`,
             display: "inline-block",
+            opacity: 0,               // ← GSAP fromTo start state
+            transform: "scale(0.5)",
           }}>{s}</span>
         ))}
       </div>
