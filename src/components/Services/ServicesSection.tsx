@@ -364,12 +364,6 @@ export default function ServicesSection() {
           to   { transform: translateY(-5px) rotate(22deg); opacity: 0.8; }
         }
         .svc-section { overflow: hidden; }
-        /* Every sibling section after services must sit above the
-           GSAP-pinned scroll layer so fast scrolls never bleed over */
-        #services ~ section {
-          position: relative;
-          z-index: 2;
-        }
         @media (max-width: 768px) {
           .svc-section { overflow-x: hidden; overflow-y: visible; }
         }
